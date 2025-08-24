@@ -1,3 +1,5 @@
+import * as zod from "zod";
+
 interface Todo {
     id: number;
     text: string;
@@ -16,16 +18,39 @@ export type TaskAction =
     | { type: "TOGGLE_TODO"; payload: number }
     | { type: "DELETE_TODO"; payload: number };
 
+const TodoSchema = zod.object({
+    id: zod.number(),
+    text: zod.string(),
+    completed: zod.boolean(),
+});
+
+const TaskStateSchema = zod.object({
+    todos: zod.array(TodoSchema),
+    length: zod.number(),
+    completed: zod.number(),
+    pending: zod.number(),
+});
+
 export const getTaskInitialState = (): TaskState => {
     const storedStage = localStorage.getItem("tasks-state");
-    return storedStage
-        ? JSON.parse(storedStage)
-        : {
-              todos: [],
-              length: 0,
-              completed: 0,
-              pending: 0,
-          };
+    const clearState = {
+        todos: [],
+        length: 0,
+        completed: 0,
+        pending: 0,
+    };
+    if (!storedStage) {
+        return clearState;
+    }
+
+    const stateObj = JSON.parse(storedStage);
+    const resultValidation = TaskStateSchema.safeParse(stateObj);
+
+    if (resultValidation.error) {
+        console.log("The state was handled and has a wrong format");
+        return clearState;
+    }
+    return JSON.parse(storedStage);
 };
 
 export const taskReducer = (state: TaskState, action: TaskAction): TaskState => {
