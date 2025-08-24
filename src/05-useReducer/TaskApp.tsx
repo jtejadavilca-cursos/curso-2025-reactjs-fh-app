@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 
 import { Plus, Trash2, Check } from "lucide-react";
 
@@ -6,44 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Todo {
-    id: number;
-    text: string;
-    completed: boolean;
-}
+import { getTaskInitialState, taskReducer } from "./reducer/tasksReducer";
 
 export const TasksApp = () => {
     const [inputValue, setInputValue] = useState("");
-    const [todos, setTodos] = useState<Todo[]>([]);
+    const [state, dispatch] = useReducer(taskReducer, getTaskInitialState());
 
     const addTodo = () => {
         setInputValue("");
         const todoValue = inputValue.trim();
         if (todoValue.length === 0) return;
 
-        const newTodo: Todo = {
-            id: Date.now(),
-            text: todoValue,
-            completed: false,
-        };
-
-        setTodos((todos) => [...todos, newTodo]);
+        dispatch({ type: "ADD_TODO", payload: todoValue });
     };
 
     const toggleTodo = (id: number) => {
-        setTodos((todos) =>
-            todos.map((t) => {
-                if (t.id === id) {
-                    return { ...t, completed: !t.completed };
-                }
-                return t;
-            })
-        );
+        dispatch({ type: "TOGGLE_TODO", payload: id });
     };
 
     const deleteTodo = (id: number) => {
-        setTodos((todos) => todos.filter((t) => t.id !== id));
+        dispatch({ type: "DELETE_TODO", payload: id });
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -52,8 +34,7 @@ export const TasksApp = () => {
         }
     };
 
-    const completedCount = todos.filter((todo) => todo.completed).length;
-    const totalCount = todos.length;
+    const { todos, completed: completedCount, length: totalCount } = state;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
