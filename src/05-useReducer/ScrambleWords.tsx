@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { SkipForward, Play } from "lucide-react";
+import conffeti from "canvas-confetti";
 
 const GAME_WORDS = [
     // "REACT",
@@ -57,7 +58,7 @@ export const ScrambleWords = () => {
     const [isGameOver, setIsGameOver] = useState(false);
 
     useEffect(() => {
-        if (errorCounter === 3) setIsGameOver(true);
+        if (errorCounter === maxAllowErrors) setIsGameOver(true);
     }, [errorCounter]);
 
     useEffect(() => {
@@ -71,6 +72,12 @@ export const ScrambleWords = () => {
         console.log("Intento de adivinanza:", guess, currentWord);
         const isCorrect = currentWord === guess;
         if (isCorrect) {
+            conffeti({
+                particleCount: 100,
+                spread: 120,
+                origin: { y: 0.6 },
+            });
+
             setPoints((p) => p + 1);
             const newWords = words.slice(1);
             setWords(newWords);
